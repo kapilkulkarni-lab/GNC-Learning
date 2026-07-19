@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# MATLAB
+*.asv
+*.autosave
+slprj/
+*.slxc
+
+# OS / editor
+.DS_Store
+Thumbs.db
