@@ -14,11 +14,11 @@ def guidance_multi_waypoint(t, waypoints, segment_times):
     Returns:
         ref - dict with desired position, velocity, acceleration, and yaw
     """
-    n_waypoints = waypoints.shape[0]
-    n_segments = n_waypoints - 1
+    n_waypoints = waypoints.shape[0] # Determines the number of waypoints .shape[0] (Number of Rows in Waypoints)
+    n_segments = n_waypoints - 1  # Number of segments = Number of waypoints - 1
 
     # Cumulative time at each waypoint
-    t_cumulative = np.concatenate([[0.0], np.cumsum(segment_times)])
+    t_cumulative = np.concatenate([[0.0], np.cumsum(segment_times)]) 
 
     if t <= 0:
         # Before trajectory starts - use first waypoint
@@ -55,6 +55,8 @@ def guidance_multi_waypoint(t, waypoints, segment_times):
         psi_end = waypoints[segment_idx + 1, 3]
 
         # Handle yaw wraparound (choose shortest rotation path)
+        # If yaw rotation is larger than pi rad in either pos or negative direction,
+        # then add or subtract 2 pi to find shortest distance
         delta_psi = psi_end - psi_start
         if delta_psi > np.pi:
             delta_psi -= 2*np.pi
@@ -65,19 +67,20 @@ def guidance_multi_waypoint(t, waypoints, segment_times):
         tau = (t - t_segment_start) / t_segment_duration
 
         # Cubic spline blending function and derivatives
-        s = 3*tau**2 - 2*tau**3        # position
+        s = 3*tau**2 - 2*tau**3        # position function models a cubic spline that levels at tau = 0 and tau = 1
         s_dot = 6*tau - 6*tau**2       # velocity (d/dtau)
         s_ddot = 6 - 12*tau            # acceleration (d^2/dtau^2)
 
         delta_pos = pos_end - pos_start
 
-        pos_des = pos_start + s * delta_pos
+        pos_des = pos_start + s * delta_pos 
         vel_des = (s_dot / t_segment_duration) * delta_pos
         accel_des = (s_ddot / t_segment_duration**2) * delta_pos
 
         psi_des = psi_start + s * delta_psi
         psid_des = (s_dot / t_segment_duration) * delta_psi
-
+    
+    #Desired pos, vel, accel, and yaw/yaw rate
     return {
         'x': pos_des[0], 'y': pos_des[1], 'z': pos_des[2],
         'xd': vel_des[0], 'yd': vel_des[1], 'zd': vel_des[2],
