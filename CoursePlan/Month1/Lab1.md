@@ -1,0 +1,5 @@
+Comparing Aircraft/UAV with Underwater/Marine/USV is somewhat simple. They both utilize similar convetions for their frames. In the body frame for both, x,y,z correspond to forward, lateral, and vertical direction respectively. In terms of velocities in the body fram Fossen specifically lays out surge, sway, and heave as specific name for body velocities in x,y,z. Both have the some convetion for rotation and rotational rate. 
+
+One key difference is the specific architecture of the navigation frame and the body frame for the marine convention where they are explicitly split up. In aircraft convention, these are usually all put into one state vector. Another key difference between these two, and likely the most important, is that underwater vehicles only thrust forward and control yaw, while aircraft control pitch, roll, yaw, thrust for movement. 
+
+Lastly the forces acting upon underwater vehicles also consider bouancy and hydrodynamic added mass, affecting the dynamics calculations. 
