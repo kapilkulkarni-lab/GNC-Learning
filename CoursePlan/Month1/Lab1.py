@@ -78,7 +78,7 @@ def euler_to_quat(yaw, pitch, roll):
 
     Returns:
     q : ndarray
-        The quaternion [qx, qy, qz, qw] where qw is the scalar part.
+        The quaternion [qw, qx, qy, qz] where qw is the scalar part.
     """
     cy = np.cos(yaw / 2)
     sy = np.sin(yaw / 2)
@@ -92,7 +92,7 @@ def euler_to_quat(yaw, pitch, roll):
     qy = cy * sp * cr + sy * cp * sr
     qz = sy * cp * cr - cy * sp * sr
 
-    return np.array([qx, qy, qz, qw])
+    return np.array([qw, qx, qy, qz])
 
 
 def quat_to_R(q):
@@ -101,14 +101,14 @@ def quat_to_R(q):
 
     Parameters:
     q : array_like
-        The quaternion [qx, qy, qz, qw] where qw is the scalar part.
+        The quaternion [qw, qx, qy, qz] where qw is the scalar part.
 
     Returns:
     R : ndarray
         The 3x3 Direction Cosine Matrix.
     """
     q = q/np.linalg.norm(q)  # Normalize the quaternion
-    qx, qy, qz, qw = q
+    qw, qx, qy, qz = q
     R = np.array([[1 - 2*(qy**2 + qz**2), 2*(qx*qy - qw*qz), 2*(qx*qz + qw*qy)],
                   [2*(qx*qy + qw*qz), 1 - 2*(qx**2 + qz**2), 2*(qy*qz - qw*qx)],
                   [2*(qx*qz - qw*qy), 2*(qy*qz + qw*qx), 1 - 2*(qx**2 + qy**2)]])
@@ -125,7 +125,7 @@ def R_to_quat(R):
 
     Returns:
     q : ndarray
-        The quaternion [qx, qy, qz, qw] where qw is the scalar part.
+        The quaternion [qw, qx, qy, qz] where qw is the scalar part.
     """
     if np.trace(R) > 0:
         S = np.sqrt(np.trace(R) + 1.0) * 2  # S = 4*qw
@@ -152,7 +152,7 @@ def R_to_quat(R):
         qy = (R[1,2] + R[2,1]) / S
         qz = S / 4
 
-    return np.array([qx, qy, qz, qw])
+    return np.array([qw, qx, qy, qz])
 
 
 def quat_to_euler(q):
@@ -163,7 +163,7 @@ def quat_to_euler(q):
 
     Parameters:
     q : array_like
-        The quaternion [qx, qy, qz, qw] where qw is the scalar part.
+        The quaternion [qw, qx, qy, qz] where qw is the scalar part.
 
     Returns:
     yaw : float
@@ -174,7 +174,7 @@ def quat_to_euler(q):
         The roll angle in radians.
     """
     q = q/np.linalg.norm(q)  # Normalize the quaternion
-    qx, qy, qz, qw = q
+    qw, qx, qy, qz = q
 
     yaw = np.arctan2(2*(qw*qz + qx*qy), 1 - 2*(qy**2 + qz**2))
     pitch = np.arcsin(np.clip(2*(qw*qy - qx*qz), -1.0, 1.0))
@@ -184,20 +184,20 @@ def quat_to_euler(q):
 
 
 def quat_multiply(q1, q2):
-    """Quaternion multiplication, [qx, qy, qz, qw] convention (scalar last)."""
-    x1, y1, z1, w1 = q1
-    x2, y2, z2, w2 = q2
+    """Quaternion multiplication, [qw, qx, qy, qz] convention (scalar first)."""
+    w1, x1, y1, z1 = q1
+    w2, x2, y2, z2 = q2
     return np.array([
+        w1*w2 - x1*x2 - y1*y2 - z1*z2,
         w1*x2 + x1*w2 + y1*z2 - z1*y2,
         w1*y2 - x1*z2 + y1*w2 + z1*x2,
-        w1*z2 + x1*y2 - y1*x2 + z1*w2,
-        w1*w2 - x1*x2 - y1*y2 - z1*z2
+        w1*z2 + x1*y2 - y1*x2 + z1*w2
     ])
 
 
 def quat_inverse(q):
-    """Inverse of a unit quaternion: conjugate. [qx,qy,qz,qw] convention."""
-    return np.array([-q[0], -q[1], -q[2], q[3]])
+    """Inverse of a unit quaternion: conjugate. [qw,qx,qy,qz] convention."""
+    return np.array([q[0], -q[1], -q[2], -q[3]])
 
 
 def quat_error(q, q_target):
